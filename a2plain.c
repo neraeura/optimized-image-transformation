@@ -11,19 +11,16 @@
 static A2Methods_UArray2 new(int width, int height, int size)
 {
         //TODO: Implement this function and remove the dummy return statement.
-        return NULL;
+        return UArray2_new(int width, int height, int size);
 }
 
 static A2Methods_UArray2 new_with_blocksize(int width, int height, int size,
                                             int blocksize)
 {
-        //TODO: Implement this function and remove the dummy return statement.
         (void) blocksize;
-        return NULL;
+        return UArray2_new(int width, int height, int size);
 }
 
-
-/* TODO: ...many more private (static) definitions follow */
 
 static void map_row_major(A2Methods_UArray2 uarray2,
                           A2Methods_applyfun apply,
@@ -74,9 +71,12 @@ static void small_map_col_major(A2Methods_UArray2        a2,
 static struct A2Methods_T uarray2_methods_plain_struct = {
         new,
         new_with_blocksize,
-        /* ... other functions follow in order,
-         *     with NULL for those not implemented ...
-         */
+        map_row_major,
+        map_col_major,
+        small_closure,
+        apply_small,
+        small_map_row_major,
+        small_map_col_major,
 };
 
 // finally the payoff: here is the exported pointer to the struct
