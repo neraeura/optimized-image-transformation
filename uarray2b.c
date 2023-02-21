@@ -50,6 +50,7 @@ T UArray2b_new(int width, int height, int size, int blocksize)
         T array2b = malloc(sizeof(struct T));
         assert(array2b != NULL);
         assert(blocksize >= 1);
+        assert(size != 0);
         
         int block_cols = (width  + blocksize - 1) / blocksize;
         int block_rows = (height + blocksize - 1) / blocksize;
@@ -83,15 +84,22 @@ T UArray2b_new(int width, int height, int size, int blocksize)
  **************************/
 T UArray2b_new_64K_block(int width, int height, int size)
 {
+        assert(width > 0 && height > 0);
+        assert(size > 0);
         /* Step 1: create a block size that can fit into 64 * 1024 */
-        int blocksize = sqrt((double) MAX_BYTES/ (double) size);
-        printf("This is the blocksize.....%d", blocksize);
+        int blocksize = (int) sqrt((double) MAX_BYTES/ (double) size);
+        printf("This is the blocksize.....%d\n", blocksize);
 
         /* Step 2: if cell > MAX_BYTES, make blocksize == 1 */
-        if (blocksize == 0)
-        {
+        if (blocksize == 0){
                 blocksize = 1;
         }
+
+        // int bytes_in_block = blocksize * blocksize * size;
+        // assert(bytes_in_block <= MAX_BYTES);
+        // if(size <= MAX_BYTES){
+
+        // }
         /* Step 3: call UArray_2b to make a UArray2b with the block size we chose */
         return UArray2b_new(width, height, size, blocksize);
 }
@@ -241,7 +249,7 @@ void UArray2b_map(T array2b, void apply(int col, int row, T array2b, void *elem,
                         printf("in block [%d, %d]\n", col, row);
                        
                         int num_cells = UArray_length(*block_cells);
-                        printf("This is the number of stuff in an array....%d\n", num_cells);
+                        //printf("This is the number of stuff in an array....%d\n", num_cells);
 
                         /* To calculate the current column and row we are in 
                         in our overall 2D array, we can mult*/

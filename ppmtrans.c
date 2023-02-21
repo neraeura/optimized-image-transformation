@@ -2,13 +2,14 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <except.h>
 
 #include "assert.h"
 #include "a2methods.h"
 #include "a2plain.h"
 #include "a2blocked.h"
 #include "pnm.h"
-#include "uarray2b.h"
+
 
 #define SET_METHODS(METHODS, MAP, WHAT) do {                    \
         methods = (METHODS);                                    \
@@ -36,8 +37,9 @@ int main(int argc, char *argv[])
         char *time_file_name = NULL;
         (void) time_file_name;
         int   rotation       = 0;
-        int   i;
-
+        int   i;    
+        
+        
         /* default to UArray2 methods */
         A2Methods_T methods = uarray2_methods_plain; 
         assert(methods);
@@ -45,6 +47,7 @@ int main(int argc, char *argv[])
         /* default to best map */
         A2Methods_mapfun *map = methods->map_default; 
         assert(map);
+
 
         for (i = 1; i < argc; i++) {
                 if (strcmp(argv[i], "-row-major") == 0) {
@@ -85,5 +88,22 @@ int main(int argc, char *argv[])
                 }
         }
 
+        Pnm_ppm ppm;
+        FILE *fp; 
+
+        if(i < argc){
+                fp = fopen(argv[1], "r"); 
+                assert(fp != NULL);
+                ppm = Pnm_ppmread(fp, methods);
+                fclose(fp);   
+        } else {
+                ppm = Pnm_ppmread(stdin, methods);
+        }
+        A2Methods_UArray2 orig_image = ppm->pixels; 
+        (void) orig_image;
+
+
         assert(false);    // the rest of this function is not yet implemented
 }
+
+

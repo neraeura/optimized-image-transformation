@@ -43,36 +43,36 @@ main(int argc, char *argv[])
         (void)argc;
         (void)argv;
 
-        UArray2b_T test_array;
+        //UArray2b_T test_array;
         bool OK = true;
 
-        test_array = UArray2b_new(DIM1, DIM2, ELEMENT_SIZE, BLOCK_SIZE);
+//         test_array = UArray2b_new(DIM1, DIM2, ELEMENT_SIZE, BLOCK_SIZE);
 
-        OK = (UArray2b_width(test_array) == DIM1) &&
-             (UArray2b_height(test_array) == DIM2) &&
-             (UArray2b_size(test_array) == ELEMENT_SIZE) &&
-             (UArray2b_blocksize(test_array) == BLOCK_SIZE);
+//         OK = (UArray2b_width(test_array) == DIM1) &&
+//          (UArray2b_height(test_array) == DIM2) &&
+//          (UArray2b_size(test_array) == ELEMENT_SIZE) &&
+//          (UArray2b_blocksize(test_array) == BLOCK_SIZE);
 
 
-        /* Note: we are only setting a value on the corner of the array */
-        // void *val = UArray2b_at(test_array, 3, 0);
-        // (void) val;
+//         /* Note: we are only setting a value on the corner of the array */
+//         // void *val = UArray2b_at(test_array, 3, 0);
+//         // (void) val;
 
-        printf("----MAPPING-----\n");
-        UArray2b_map(test_array, check_and_print, &OK);
+//        printf("----MAPPING NORMAL -----\n");
+//        UArray2b_map(test_array, check_and_print, &OK);
 
-        // UArray2b_T test_64_array = UArray2b_new_64K_block(DIM1, DIM2, ELEMENT_SIZE);
+       UArray2b_T test_64_array = UArray2b_new_64K_block(DIM1, DIM2, 4);
        
-        // OK = (UArray2b_width(test_64_array) == DIM1) &&
-        //      (UArray2b_height(test_64_array) == DIM2) &&
-        //      (UArray2b_size(test_64_array) == ELEMENT_SIZE) &&
-        //      (UArray2b_blocksize(test_64_array) == BLOCK_SIZE);
+        OK = (UArray2b_width(test_64_array) == DIM1) &&
+             (UArray2b_height(test_64_array) == DIM2) &&
+             (UArray2b_size(test_64_array) == ELEMENT_SIZE) &&
+             (UArray2b_blocksize(test_64_array) == BLOCK_SIZE);
 
-        // printf("----MAPPING-----\n");
-        // UArray2b_map(test_64_array, check_and_print, &OK);
+          printf("----MAPPING 64 K -----\n");
+//        UArray2b_map(test_64_array, check_and_print, &OK);
 
-        UArray2b_free(&test_array);
-       // UArray2b_free(&test_64_array);
-        printf("The array is %sOK!\n", (OK ? "" : "NOT "));
+       //UArray2b_free(&test_array);
+       UArray2b_free(&test_64_array);
+       printf("The array is %sOK!\n", (OK ? "" : "NOT "));
 
 }
