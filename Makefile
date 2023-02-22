@@ -70,7 +70,7 @@ a2test: a2test.o uarray2b.o uarray2.o a2plain.o
 timing_test: timing_test.o cputiming.o
 	$(CC) $(LDFLAGS) $^ -o $@ $(LDLIBS) 
 
-ppmtrans: ppmtrans.o cputiming.o uarray2b.o uarray2.o a2plain.o
+ppmtrans: ppmtrans.o cputiming.o uarray2b.o uarray2.o a2plain.o transformations.o
 	$(CC) $(LDFLAGS) $^ -o $@ $(LDLIBS)
 
 

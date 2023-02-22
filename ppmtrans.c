@@ -9,8 +9,11 @@
 #include "a2plain.h"
 #include "a2blocked.h"
 #include "pnm.h"
+#include "transformations.h"
 
+void performRotation(A2Methods_UArray2 rotated_image, A2Methods_UArray2 orig_image, A2Methods_T methods, A2Methods_mapfun *map, int rotation);
 
+ /* decides which mapping and methods to use */
 #define SET_METHODS(METHODS, MAP, WHAT) do {                    \
         methods = (METHODS);                                    \
         assert(methods != NULL);                                \
@@ -45,8 +48,11 @@ int main(int argc, char *argv[])
         assert(methods);
 
         /* default to best map */
+        /* sets mapping function pointer to be whats in the default so that 
+        if you call map it will use row-major mapping (or whatever you set to 
+        in the default field)*/
         A2Methods_mapfun *map = methods->map_default; 
-        assert(map);
+        assert(map); // assert that map is not null 
 
 
         for (i = 1; i < argc; i++) {
@@ -90,9 +96,10 @@ int main(int argc, char *argv[])
 
         Pnm_ppm ppm;
         FILE *fp; 
-
+        FILE *outfp;
+        outfp = fopen("rotflow.ppm", "w"); 
         if(i < argc){
-                fp = fopen(argv[1], "r"); 
+                fp = fopen(argv[i], "r"); 
                 assert(fp != NULL);
                 ppm = Pnm_ppmread(fp, methods);
                 fclose(fp);   
@@ -100,10 +107,21 @@ int main(int argc, char *argv[])
                 ppm = Pnm_ppmread(stdin, methods);
         }
         A2Methods_UArray2 orig_image = ppm->pixels; 
+        A2Methods_UArray2 rotated_image = NULL;
+        performRotation(rotated_image, orig_image, methods, map, rotation);
+
+        Pnm_ppmwrite(outfp, ppm);
+
         (void) orig_image;
-
-
-        assert(false);    // the rest of this function is not yet implemented
+        
+        Pnm_ppmfree(&ppm);
+      //  assert(false);    // the rest of this function is not yet implemented
 }
 
-
+void performRotation(A2Methods_UArray2 rotated_image, A2Methods_UArray2 orig_image, A2Methods_T methods, A2Methods_mapfun *map, int rotation)
+{
+        if(rotation == 90) {
+                rotated_image = rotate90(methods, map, orig_image);
+        }       
+        (void) rotated_image;
+}
