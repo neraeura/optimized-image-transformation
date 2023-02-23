@@ -7,7 +7,7 @@
 /* Define a private version of each function in */
 /* A2Methods_T that we implement.               */
 /************************************************/
-typedef A2Methods_UArray2 A2; 
+typedef A2Methods_UArray2 A2;
 
 static A2Methods_UArray2 new(int width, int height, int size)
 {

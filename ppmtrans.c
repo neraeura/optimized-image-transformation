@@ -1,17 +1,39 @@
+
+/**************************************************************
+ *
+ *                     ppmtrans.c
+ * 
+ *     Assignment: locality
+ *     Authors:  Nora A-Rahim and Daniel Opara
+ *     CS Logins: narahi01 and dopara01
+ *     Date:     February 21, 2023
+ *
+ *     This file contains the implementation for a program that performs 
+ *     simple image transformations on pixmaps. 
+ *     
+ *
+ **************************************************************/
+
+
+
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 #include <stdbool.h>
-#include <except.h>
+#include <assert.h>
 
-#include "assert.h"
 #include "a2methods.h"
 #include "a2plain.h"
 #include "a2blocked.h"
+#include "cputiming.h"
 #include "pnm.h"
 #include "transformations.h"
 
-void performRotation(A2Methods_UArray2 rotated_image, A2Methods_UArray2 orig_image, A2Methods_T methods, A2Methods_mapfun *map, int rotation);
+typedef A2Methods_UArray2 A2;
+
+A2 performRotation(A2Methods_UArray2 original_image, A2Methods_T methods, 
+                                A2Methods_mapfun *map, int rotation, 
+                                Pnm_ppm ppm, char *timing_file);
 
  /* decides which mapping and methods to use */
 #define SET_METHODS(METHODS, MAP, WHAT) do {                    \
@@ -40,20 +62,16 @@ int main(int argc, char *argv[])
         char *time_file_name = NULL;
         (void) time_file_name;
         int   rotation       = 0;
-        int   i;    
-        
+        int   i;   
+        bool is_timed = false; 
         
         /* default to UArray2 methods */
         A2Methods_T methods = uarray2_methods_plain; 
         assert(methods);
 
         /* default to best map */
-        /* sets mapping function pointer to be whats in the default so that 
-        if you call map it will use row-major mapping (or whatever you set to 
-        in the default field)*/
         A2Methods_mapfun *map = methods->map_default; 
-        assert(map); // assert that map is not null 
-
+        assert(map);
 
         for (i = 1; i < argc; i++) {
                 if (strcmp(argv[i], "-row-major") == 0) {
@@ -82,6 +100,7 @@ int main(int argc, char *argv[])
                         }
                 } else if (strcmp(argv[i], "-time") == 0) {
                         time_file_name = argv[++i];
+                        is_timed = true;
                 } else if (*argv[i] == '-') {
                         fprintf(stderr, "%s: unknown option '%s'\n", argv[0],
                                 argv[i]);
@@ -95,33 +114,126 @@ int main(int argc, char *argv[])
         }
 
         Pnm_ppm ppm;
-        FILE *fp; 
-        FILE *outfp;
-        outfp = fopen("rotflow.ppm", "w"); 
-        if(i < argc){
+        FILE *fp;
+        (void) is_timed;
+        printf("This is the time file....%s\n", time_file_name);
+        printf("This is the image file....%s\n", argv[i]);
+        if (i < argc){
                 fp = fopen(argv[i], "r"); 
-                assert(fp != NULL);
+                assert(fp);
                 ppm = Pnm_ppmread(fp, methods);
                 fclose(fp);   
         } else {
                 ppm = Pnm_ppmread(stdin, methods);
         }
-        A2Methods_UArray2 orig_image = ppm->pixels; 
+
+        A2Methods_UArray2 original_image = ppm->pixels; 
         A2Methods_UArray2 rotated_image = NULL;
-        performRotation(rotated_image, orig_image, methods, map, rotation);
-
-        Pnm_ppmwrite(outfp, ppm);
-
-        (void) orig_image;
+       
         
+        rotated_image = performRotation(original_image, methods, map, rotation,
+                                                         ppm, time_file_name);
+
+        assert(rotated_image != NULL);
+
+        /* get new rotated image data */
+        ppm->width = methods->width(rotated_image);
+        ppm->height = methods->height(rotated_image);
+        ppm->pixels = rotated_image;
+
+        /* write to stdout */
+        Pnm_ppmwrite(stdout, ppm);
+
+        /* free the ppm */
         Pnm_ppmfree(&ppm);
-      //  assert(false);    // the rest of this function is not yet implemented
+        
 }
 
-void performRotation(A2Methods_UArray2 rotated_image, A2Methods_UArray2 orig_image, A2Methods_T methods, A2Methods_mapfun *map, int rotation)
+
+ /********** performRotation() ********
+ * 
+ *  Purpose: Calls the proper method of rotation corresponding to the degree
+ *              of rotation requested by the user
+ *  Parameters: 
+ *              A2Methods_UArray2 original_image = an A2Methods_UArray2 object,
+ *                                      specifically, the two dimensional array
+ *                                      that contains the original image given
+ *                                      to the program matrix
+ *              A2Methods_T *methods = a pointer to the method suite 
+ *                                         containing function pointers 
+ *                                         for two implementations
+ *                                         of 2D arrays  
+ *              A2Methods_mapfun *map = a pointer to a default mapping function
+ *              int rotation = the degree to which an image will be rotated
+ *              Pnm_ppm ppm = the Pnm_ppm object of the original image
+ *              char *timing_filename = a pointer to the filename that
+ *                                      that will contain the timing data
+ *  Returns: An A2 object representing an image succesfully rotated 
+ *           by a specified number of degrees
+ *  Effects: 
+ *          The Pnm_ppm object is passed soley for freeing its pixels if a
+ *              rotation is performed
+ * 
+ **************************/
+A2 performRotation(A2Methods_UArray2 original_image, 
+                                        A2Methods_T methods, 
+                                        A2Methods_mapfun *map, int rotation, 
+                                        Pnm_ppm ppm, char *timing_filename)
 {
-        if(rotation == 90) {
-                rotated_image = rotate90(methods, map, orig_image);
-        }       
-        (void) rotated_image;
+        A2Methods_UArray2 rotated_image;
+        double time_used; 
+        FILE *timefp;
+        timefp = fopen(timing_filename, "w"); 
+
+        if (timing_filename != NULL) {
+                CPUTime_T timer;
+                timer = CPUTime_New();
+
+                if (rotation == 90) {
+                        CPUTime_Start(timer);
+                        rotated_image = rotate90(methods, map, original_image);
+                        time_used = CPUTime_Stop(timer);
+                        methods->free(&ppm->pixels);
+                } else if (rotation == 180) {
+                        CPUTime_Start(timer);
+                        rotated_image = rotate180(methods, map, original_image);
+                        time_used = CPUTime_Stop(timer);
+                        methods->free(&ppm->pixels);
+                } else if (rotation == 270) {
+                        CPUTime_Start(timer);
+                        rotated_image = rotate270(methods, map, original_image);
+                        time_used = CPUTime_Stop(timer);
+                        methods->free(&ppm->pixels);
+                } else if (rotation == 0) {
+                        return original_image;
+                } else {
+                        CPUTime_Free(&timer);
+                        methods->free(&ppm->pixels);
+                        Pnm_ppmfree(&ppm);
+                        exit(1);
+                }
+                CPUTime_Free(&timer);
+                fprintf(timefp, "%lf\n", time_used);
+        } else {
+                if (rotation == 90) {
+                        rotated_image = rotate90(methods, map, original_image);
+                        methods->free(&ppm->pixels);
+                } else if (rotation == 180) {
+                        rotated_image = rotate180(methods, map, original_image);
+                        methods->free(&ppm->pixels);
+                } else if (rotation == 270) {
+                        rotated_image = rotate270(methods, map, original_image);
+                        methods->free(&ppm->pixels);
+                } else if (rotation == 0) {
+                        return original_image;
+                } else {
+                        methods->free(&ppm->pixels);
+                        Pnm_ppmfree(&ppm);
+                        exit(1);
+                }
+        }
+
+        fclose(timefp);
+        return rotated_image;
+
 }
