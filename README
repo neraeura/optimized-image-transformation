@@ -1,3 +1,129 @@
 
 
-Found memcpy in Hanson's chapter on memory allocation 
+
+
+General:
+--------
+Names: Nora A-Rahim & Daniel Opara
+CS Logins: narahi01 & dopara01
+
+Acknowledgments:
+----------------
+Thank you Dan for helping us figure out issues with how we implemented timing!
+
+Thank you to Hanson's Chapter 5 on Memory Managment for introducing us to 
+memcpy! 
+
+Time Spent:
+-----------
+60 hours 
+
+Architecture of Solution: 
+-------------------------
+
+Our solution relies heavily open the map and apply functions to do the bulk 
+of the work behind the transformations. Effectively, we implemented a module 
+composed of functions that handle a variety of image transformations. 
+
+Each of these functions within this module takes in an A2 object (a 2D array) 
+representing the original image and applies the corresponding transformation on 
+it, returning the transformed image as another A2 object. The transformations 
+are performed by looping through each element in the original array by use of 
+individual apply functions computing each type of transformation, 
+and calculating the corresponding index in the transformed array. The mapping 
+function which call these apply functions utilizes the same closure which 
+stores useful information about the image dimesions prior to transformations.
+The transformed array is then created and populated with new elements as 
+necessary.
+
+
+Performance (Part E):
+---------------------
+All of the following tests were ran on: 
+Computer Name: JCC Lab Computer lab235
+Computer Model: Lab235 Machine(m)
+CPU Type: Intel(R) Core(TM) i7-10700T CPU @ 2.00GHz
+
+
+| Rotation |    Size   | CPU Time (ns)  | Pixel (ns/pix) | Clock Rate | Access |
+| -------  | --------- | -------------- | ---------------| ---------- | ------ |
+|  90      |  180x101  |    924477      |   50.85        |  2.00GHz   |   RM   |
+| 180      |  180x101  |    933865      |   51.36        |  2.00GHz   |   RM   |
+| 270      |  180x101  |    953188      |   52.43        |  2.00GHz   |   RM   |
+|  90      | 2856x1603 |   330119268    |   72.11        |  2.00GHz   |   RM   |
+| 180      | 2856x1603 |   243656792    |   53.22        |  2.00GHz   |   RM   |
+| 270      | 2856x1603 |    953188      |   78.83        |  2.00GHz   |   RM   |
+|  90      |  180x101  |   1403059      |   77.18        |  2.00GHz   |   CM   |
+| 180      |  180x101  |   1142015      |   62.82        |  2.00GHz   |   CM   |
+| 270      |  180x101  |   1099756      |   60.49        |  2.00GHz   |   CM   |
+|  90      | 2856x1603 |   385323826    |   84.17        |  2.00GHz   |   CM   |
+| 180      | 2856x1603 |   454719053    |   99.32        |  2.00GHz   |   CM   |
+| 270      | 2856x1603 |   378754313    |   82.73        |  2.00GHz   |   CM   |
+|  90      |  180x101  |    1722546     |   94.70        |  2.00GHz   |   BM   |
+| 180      |  180x101  |    1925387     |   105.91       |  2.00GHz   |   BM   |
+| 270      |  180x101  |    1704177     |   93.74        |  2.00GHz   |   BM   |
+|  90      | 2856x1603 |   385712053    |   84.25        |  2.00GHz   |   BM   |
+| 180      | 2856x1603 |   382913049    |   83.64        |  2.00GHz   |   BM   |
+| 270      | 2856x1603 |   378754313    |   82.73        |  2.00GHz   |   BM   |
+
+Table Legend: 
+        "Rotation" refers to the type of rotation performed 
+        "Size" refers to image size 
+        "CPU Time" refers to total CPU time 
+        "Pixel" refers to time per input pixel for each rotation on each 
+                image reported; recorded in nanoseconds/pixel 
+        "CPU Type" refers to the CPU type of the computer used for these tests 
+        "Clock Rate" refers to the clock rate of the computer used for these
+                     tests 
+        "Access" refers to the type of element access pattern we used: 
+                        BM = block major 
+                        RM = row major 
+                        CM = column major 
+
+1) Below your table, discuss patterns you see in the results: for example, 
+do certain rotations run faster when using blocked arrays vs. plain?
+
+From the table, we can see that the CPU time and pixel access time both 
+increase as the image size increases, which is expected. Additionally, we can 
+observe some patterns in the results with regards to the type of element 
+access pattern used:
+
+For smaller image sizes (180x101), the row-major (RM) and column-major (CM) 
+access patterns perform similarly, but the block-major (BM) access pattern is 
+slower. 
+
+For the 180-degree rotation, the pixel access time is generally higher compared
+to the other rotations, regardless of the image size and access pattern.
+
+For the 90-degree and 270-degree rotations, the pixel access time is generally 
+lower compared to the 180-degree rotation. In particular, the 90-degree 
+rotation tends to have the lowest pixel access time.
+
+There is no significant difference in performance between the three access 
+patterns for the 90-degree and 270-degree rotations for larger image sizes.
+
+Based on these observations, we can conclude that the performance of the 
+different rotations is dependent on various factors such as image size and 
+element access pattern. However, in general, the 90-degree and 270-degree 
+rotations tend to perform better than the 180-degree rotation, 
+and the block-major access pattern is generally faster for larger image sizes.
+
+2) If you try different sized images (not required but useful), is the number of 
+instructions per pixel similar regardless of image size? If not, why not?
+
+
+Based on the data provided in the table, it seems that the number of 
+instructions per pixel is not similar regardless of image size.
+
+For example, if we compare the pixel time for the 90-degree rotation on the 
+180x101 image and the 2856x1603 image, we can see that the time per pixel for 
+the larger image is approximately 1.65 times greater than the time per pixel
+for the smaller image. This suggests that the number of instructions per pixel 
+is higher for the larger image, which makes sense as there are more pixels to 
+process and more memory to access.
+
+In general, we can expect the number of instructions per pixel to increase as 
+image size increases, since more memory access and processing is required for 
+larger images. However, the specific increase in instructions per pixel may 
+depend on the implementation details and algorithm used for the image
+processing.

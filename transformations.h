@@ -29,6 +29,12 @@ A2 rotate180(A2Methods_T method_suite, Mapfun map, A2 orig_image);
 
 A2 rotate270(A2Methods_T method_suite, Mapfun map, A2 orig_image);
 
+A2 flipVertical(A2Methods_T method_suite, Mapfun map, A2 original_image);
+
+A2 flipHorizontal(A2Methods_T method_suite, Mapfun map, A2 original_image);
+
+A2 transposeMatrix(A2Methods_T method_suite, Mapfun map, A2 original_image);
+
 
 #undef A2 
 #undef Mapfun

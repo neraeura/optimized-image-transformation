@@ -130,8 +130,8 @@ void UArray2b_free(T *array2b)
         /* free the UArray in each block */
         for (int col = 0; col < block_cols; col++) {
                 for (int row = 0; row < block_rows; row++) {
-                        UArray_T *free_me = UArray2_at((*array2b)->blocks, row, 
-                                                                        col);
+                        UArray_T *free_me = UArray2_at((*array2b)->blocks, col, 
+                                                                        row);
                         assert(*free_me != NULL && free_me != NULL);
                         UArray_free(free_me);
                 }
@@ -157,7 +157,6 @@ void UArray2b_free(T *array2b)
  ****************************************************************************/
 void *UArray2b_at(T array2b, int column, int row)
 {
-        assert(array2b != NULL);
         assert(column >= 0 && row >= 0);
         assert(column < array2b->width && row < array2b->height);
 
@@ -172,8 +171,8 @@ void *UArray2b_at(T array2b, int column, int row)
         assert(block_cells != NULL);
 
 
-        int cell_idx = (array2b->blocksize * (row % array2b->blocksize) +
-                                              (column % array2b->blocksize));
+        int cell_idx = (array2b->blocksize * (column % array2b->blocksize) +
+                                              (row % array2b->blocksize));
 
         /* Finds the element in that UArray */
         void *data = UArray_at(*block_cells, cell_idx);
@@ -290,7 +289,7 @@ void UArray2b_map(T array2b, void apply(int col, int row, T array2b, void *elem,
                                         valid_cell_col < array2b->width) {
                                         void *elem = UArray_at(*block_cells, 
                                                                 cell_idx);
-                                        apply(valid_cell_row, valid_cell_col, 
+                                        apply(valid_cell_col, valid_cell_row, 
                                                         array2b, elem, cl);
                                 }
                         }
